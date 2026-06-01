@@ -167,65 +167,91 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
         </select>
       </div>
 
-      {/* Lista de Tareas */}
-      <div className="flex flex-col gap-3">
-        {filteredTasks.length === 0 && (
-          <div className="py-12 text-center text-text-tertiary">
-            <CheckSquare size={48} className="mx-auto mb-4 opacity-20" />
-            <p>No hay tareas que coincidan con los filtros.</p>
-          </div>
-        )}
-        {filteredTasks.map((task) => {
-          const course = courses.find(c => c.id === task.course_id)
-          const priorityColors: Record<string, string> = {
-            'baja': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400',
-            'media': 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400',
-            'alta': 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
-          }
-          const statusIcon = task.status === 'completada' ? <CheckCircle2 size={20} className="text-green-600" /> :
-                             task.status === 'en_progreso' ? <Clock size={20} className="text-blue-600" /> :
-                             <Circle size={20} className="text-slate-400" />
+      {/* Lista de Tareas (Data Table) */}
+      <div className="bg-white dark:bg-slate-900 border border-surface-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-surface-overlay text-text-secondary font-semibold border-b border-surface-border uppercase tracking-wider text-xs">
+              <tr>
+                <th className="px-6 py-4 w-16 text-center">Estado</th>
+                <th className="px-6 py-4 w-full">Título de Tarea</th>
+                <th className="px-6 py-4">Curso</th>
+                <th className="px-6 py-4">Vencimiento</th>
+                <th className="px-6 py-4 text-center">Prioridad</th>
+                <th className="px-6 py-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-border">
+              {filteredTasks.map((task) => {
+                const course = courses.find(c => c.id === task.course_id)
+                const priorityColors: Record<string, string> = {
+                  'baja': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400',
+                  'media': 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400',
+                  'alta': 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
+                }
+                const statusIcon = task.status === 'completada' ? <CheckCircle2 size={22} className="text-green-600 mx-auto" /> :
+                                   task.status === 'en_progreso' ? <Clock size={22} className="text-blue-600 mx-auto" /> :
+                                   <Circle size={22} className="text-slate-400 mx-auto" />
 
-          return (
-            <div key={task.id} className="bg-surface-raised border border-surface-border p-4 rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-4 flex-1">
-                <button onClick={() => handleStatusChange(task.id, task.status)} className="mt-1 flex-shrink-0 cursor-pointer hover:scale-110 transition-transform">
-                  {statusIcon}
-                </button>
-                <div className="flex-1">
-                  <h3 className={`font-medium ${task.status === 'completada' ? 'line-through text-slate-400' : 'text-text-primary'}`}>
-                    {task.title}
-                  </h3>
-                  {task.description && <p className="text-sm text-text-secondary mt-1">{task.description}</p>}
-                  
-                  <div className="flex flex-wrap gap-2 mt-3 items-center">
-                    {course && (
-                      <span className="text-xs px-2 py-1 rounded-md bg-surface-overlay flex items-center gap-1 border border-surface-border">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: course.color }}></div>
-                        {course.name}
+                return (
+                  <tr key={task.id} className="hover:bg-surface-raised transition-colors group">
+                    <td className="px-6 py-4 text-center align-middle">
+                      <button onClick={() => handleStatusChange(task.id, task.status)} className="cursor-pointer hover:scale-110 transition-transform">
+                        {statusIcon}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4">
+                      <h3 className={`font-semibold text-base ${task.status === 'completada' ? 'line-through text-slate-400' : 'text-text-primary'}`}>
+                        {task.title}
+                      </h3>
+                      {task.description && <p className="text-sm text-text-secondary mt-1 truncate max-w-md" title={task.description}>{task.description}</p>}
+                    </td>
+                    <td className="px-6 py-4">
+                      {course ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: course.color }}></div>
+                          <span className="font-medium text-slate-700 dark:text-slate-300">{course.name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {task.due_date ? (
+                        <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5 font-medium">
+                          <AlertTriangle size={14} className={new Date(task.due_date) < new Date() && task.status !== 'completada' ? "text-red-500" : "text-amber-500"} />
+                          {task.due_date}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`text-xs px-3 py-1.5 rounded-md border font-bold uppercase tracking-wider ${priorityColors[task.priority]}`}>
+                        {task.priority}
                       </span>
-                    )}
-                    <span className={`text-xs px-2 py-1 rounded-md border font-medium ${priorityColors[task.priority]}`}>
-                      {task.priority.toUpperCase()}
-                    </span>
-                    {task.due_date && (
-                      <span className="text-xs px-2 py-1 rounded-md text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 flex items-center gap-1">
-                        <AlertTriangle size={12} />
-                        Vence: {task.due_date}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button onClick={() => handleDelete(task.id)} className="text-slate-400 hover:text-red-600 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-red-50 shadow-sm" title="Eliminar tarea">
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
               
-              <div className="flex justify-end border-t sm:border-t-0 pt-3 sm:pt-0 sm:pl-3 sm:border-l border-surface-border">
-                <button onClick={() => handleDelete(task.id)} className="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30">
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          )
-        })}
+              {filteredTasks.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-16 text-center text-text-tertiary">
+                    <CheckSquare size={48} className="mx-auto mb-4 opacity-20" />
+                    <p className="text-lg font-medium text-slate-600 dark:text-slate-400">No hay tareas</p>
+                    <p className="mt-1">No se encontraron tareas que coincidan con los filtros actuales.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

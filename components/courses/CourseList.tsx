@@ -87,32 +87,46 @@ export function CourseList({ initialCourses }: { initialCourses: Course[] }) {
         </form>
       </div>
 
-      {/* Lista de Cursos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {optimisticCourses.map((course) => (
-          <div key={course.id} className="bg-surface-raised border border-surface-border p-4 rounded-lg shadow-sm flex flex-col justify-between h-32">
-            <div>
-              <div className="flex justify-between items-start">
-                <h3 className="font-semibold truncate pr-2" title={course.name}>{course.name}</h3>
-                <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: course.color }}></div>
-              </div>
-              <p className="text-sm text-text-secondary mt-1 font-mono">{course.code || 'Sin código'}</p>
-            </div>
-            
-            <div className="flex justify-end mt-4">
-              <button onClick={() => handleDelete(course.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1" title="Eliminar curso">
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
-        {optimisticCourses.length === 0 && (
-          <div className="col-span-full py-12 text-center text-text-tertiary flex flex-col items-center justify-center border-2 border-dashed border-surface-border rounded-lg">
-            <BookOpen size={48} className="mb-4 opacity-20" />
-            <p>Aún no tienes cursos.</p>
-            <p className="text-sm mt-1">Crea tu primer curso arriba para empezar.</p>
-          </div>
-        )}
+      {/* Lista de Cursos (Data Table) */}
+      <div className="bg-white dark:bg-slate-900 border border-surface-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-surface-overlay text-text-secondary font-semibold border-b border-surface-border uppercase tracking-wider text-xs">
+              <tr>
+                <th className="px-6 py-4">Color</th>
+                <th className="px-6 py-4">Código</th>
+                <th className="px-6 py-4 w-full">Nombre del Curso</th>
+                <th className="px-6 py-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-border">
+              {optimisticCourses.map((course) => (
+                <tr key={course.id} className="hover:bg-surface-raised transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="w-6 h-6 rounded-md shadow-sm border border-slate-200 dark:border-slate-700" style={{ backgroundColor: course.color }}></div>
+                  </td>
+                  <td className="px-6 py-4 font-mono text-slate-500">{course.code || '-'}</td>
+                  <td className="px-6 py-4 font-medium text-text-primary text-base">{course.name}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => handleDelete(course.id)} className="text-slate-400 hover:text-red-600 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-red-50 shadow-sm" title="Eliminar curso">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              
+              {optimisticCourses.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-16 text-center text-text-tertiary">
+                    <BookOpen size={48} className="mx-auto mb-4 opacity-20" />
+                    <p className="text-lg font-medium text-slate-600 dark:text-slate-400">Sin cursos registrados</p>
+                    <p className="mt-1">Crea tu primer curso usando el formulario de arriba.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

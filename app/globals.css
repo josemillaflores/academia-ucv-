@@ -1,6 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-brand-primary: #002D72;
+  --color-brand-subtle: #eff6ff;
+  --color-brand-secondary: #C8102E;
+  --color-brand-hover: #001f4d;
+
+  --color-surface-base: #ffffff;
+  --color-surface-raised: #f8fafc;
+  --color-surface-overlay: #f1f5f9;
+  --color-surface-border: #e2e8f0;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-tertiary: #64748b;
+  --color-text-disabled: #94a3b8;
+  --color-text-on-brand: #ffffff;
+
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+}
+
 @layer base {
   :root {
     /* Design tokens - Academic Theme (UCV Colors) */
@@ -19,9 +40,6 @@
     --color-text-tertiary: #64748b;
     --color-text-disabled: #94a3b8;
     --color-text-on-brand: #ffffff;
-
-    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-    --font-mono: 'DM Mono', ui-monospace, monospace;
   }
 
   .dark {

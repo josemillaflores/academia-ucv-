@@ -88,48 +88,70 @@ export function DocentesList({ initialDocentes }: { initialDocentes: Docente[] }
         </form>
       </div>
 
-      {/* Lista de Docentes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {optimisticDocentes.map((docente) => (
-          <div key={docente.id} className="bg-surface-raised border border-surface-border p-5 rounded-xl shadow-sm flex flex-col justify-between hover:border-amber-500 transition-colors">
-            <div className="flex items-start gap-4">
-              <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-full text-slate-500 flex-shrink-0">
-                <Users size={24} />
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <h3 className="font-semibold text-lg truncate text-text-primary" title={docente.name}>{docente.name}</h3>
-                
-                {docente.specialty && (
-                  <span className="text-xs text-text-secondary flex items-center gap-1 mt-1 truncate">
-                    <GraduationCap size={14} className="text-amber-500" />
-                    {docente.specialty}
-                  </span>
-                )}
-                
-                {docente.email && (
-                  <span className="text-xs text-text-secondary flex items-center gap-1 mt-1 truncate">
-                    <Mail size={14} className="text-slate-400" />
-                    {docente.email}
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex justify-end mt-4 pt-3 border-t border-surface-border">
-              <button onClick={() => handleDelete(docente.id)} className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 p-2 rounded-lg transition-colors" title="Eliminar docente">
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
-        
-        {optimisticDocentes.length === 0 && (
-          <div className="col-span-full py-16 text-center text-text-tertiary flex flex-col items-center justify-center border-2 border-dashed border-surface-border rounded-xl">
-            <Users size={48} className="mb-4 text-slate-300 dark:text-slate-700" />
-            <p className="text-lg font-medium">Plana Docente Vacía</p>
-            <p className="text-sm mt-1 max-w-sm">Registra a los profesores de tus cursos para mantener el directorio actualizado.</p>
-          </div>
-        )}
+      {/* Lista de Docentes (Data Table) */}
+      <div className="bg-white dark:bg-slate-900 border border-surface-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-surface-overlay text-text-secondary font-semibold border-b border-surface-border uppercase tracking-wider text-xs">
+              <tr>
+                <th className="px-6 py-4 w-12 text-center">Perfil</th>
+                <th className="px-6 py-4 w-full">Nombre Completo</th>
+                <th className="px-6 py-4">Especialidad</th>
+                <th className="px-6 py-4">Correo Electrónico</th>
+                <th className="px-6 py-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-border">
+              {optimisticDocentes.map((docente) => (
+                <tr key={docente.id} className="hover:bg-surface-raised transition-colors group">
+                  <td className="px-6 py-4 text-center">
+                    <div className="bg-slate-100 dark:bg-slate-800 w-10 h-10 rounded-full flex items-center justify-center text-slate-500 mx-auto shadow-sm border border-slate-200 dark:border-slate-700">
+                      <Users size={20} />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <h3 className="font-semibold text-text-primary text-base">{docente.name}</h3>
+                  </td>
+                  <td className="px-6 py-4">
+                    {docente.specialty ? (
+                      <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5 font-medium">
+                        <GraduationCap size={16} className="text-amber-500" />
+                        {docente.specialty}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {docente.email ? (
+                      <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                        <Mail size={16} className="text-slate-400" />
+                        {docente.email}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => handleDelete(docente.id)} className="text-slate-400 hover:text-red-600 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-red-50 shadow-sm" title="Eliminar docente">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              
+              {optimisticDocentes.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-16 text-center text-text-tertiary">
+                    <Users size={48} className="mx-auto mb-4 opacity-20 text-slate-400" />
+                    <p className="text-lg font-medium text-slate-600 dark:text-slate-400">Plana Docente Vacía</p>
+                    <p className="mt-1">Registra a los profesores de tus cursos para mantener el directorio actualizado.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
