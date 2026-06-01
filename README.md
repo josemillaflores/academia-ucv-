@@ -1,5 +1,7 @@
 # AcademIA - Sistema de Gestión Universitaria 🎓
 
+**Autor:** JOSE LUIS MILLA FLORES
+
 ![AcademIA Version](https://img.shields.io/badge/Versión-1.0.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-15.5-black?logo=next.js)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.0-06B6D4?logo=tailwindcss)
@@ -119,8 +121,4 @@ Para garantizar que el software sea robusto, mantenible y veloz, se adoptaron la
 5. Abre `http://localhost:3000` en tu navegador.
 
 ---
-
-## 👨‍💻 Autor
-
-- **JOSE LUIS MILLA FLORES**
-- *Desarrollado para gestionar el futuro de la educación.*
+*Desarrollado para gestionar el futuro de la educación.*
