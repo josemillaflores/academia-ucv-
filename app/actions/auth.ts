@@ -64,8 +64,11 @@ export async function resetPassword(formData: FormData) {
   const supabase = await createClient()
   const email = formData.get('email') as string
 
+  // Usar siempre la URL de producción para evitar localhost, y apuntar al confirm route
+  const baseUrl = 'https://academia-ucv.vercel.app'
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password`,
+    redirectTo: `${baseUrl}/auth/confirm?next=/reset-password`,
   })
 
   if (error) {
