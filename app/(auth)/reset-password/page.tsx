@@ -1,11 +1,13 @@
 import { updatePassword } from '@/app/actions/auth'
 import { KeyRound } from 'lucide-react'
 
-export default function ResetPasswordPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: { message: string }
+  searchParams: Promise<{ message: string }>
 }) {
+  const { message } = await searchParams
+
   return (
     <div className="flex-1 flex w-full flex-col sm:flex-row items-center justify-center min-h-screen bg-[var(--color-surface-overlay)]">
       
@@ -38,9 +40,9 @@ export default function ResetPasswordPage({
               Guardar y continuar
             </button>
             
-            {searchParams?.message && (
+            {message && (
               <p className="mt-4 p-4 bg-[var(--color-surface-overlay)] border border-[var(--color-brand-primary)] text-[var(--color-text-primary)] rounded-lg text-center text-sm font-medium">
-                {searchParams.message}
+                {message}
               </p>
             )}
           </form>

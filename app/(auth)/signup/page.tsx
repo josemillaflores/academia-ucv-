@@ -2,11 +2,13 @@ import { signup } from '@/app/actions/auth'
 import Link from 'next/link'
 import { GraduationCap, Sparkles } from 'lucide-react'
 
-export default function SignupPage({
+export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: { message: string }
+  searchParams: Promise<{ message: string }>
 }) {
+  const { message } = await searchParams
+
   return (
     <div className="flex-1 flex w-full flex-col sm:flex-row items-center justify-center min-h-screen bg-[var(--color-surface-overlay)]">
       
@@ -61,9 +63,9 @@ export default function SignupPage({
               Registrarme
             </button>
             
-            {searchParams?.message && (
+            {message && (
               <p className="mt-4 p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-lg text-center text-sm font-medium">
-                {searchParams.message}
+                {message}
               </p>
             )}
 

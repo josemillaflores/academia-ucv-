@@ -2,11 +2,13 @@ import { login } from '@/app/actions/auth'
 import Link from 'next/link'
 import { GraduationCap } from 'lucide-react'
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { message: string }
+  searchParams: Promise<{ message: string }>
 }) {
+  const { message } = await searchParams
+
   return (
     <div className="flex-1 flex w-full flex-col sm:flex-row items-center justify-center min-h-screen bg-[var(--color-surface-overlay)]">
       
@@ -66,9 +68,9 @@ export default function LoginPage({
               Ingresar
             </button>
             
-            {searchParams?.message && (
+            {message && (
               <p className="mt-4 p-4 bg-[var(--color-surface-overlay)] border border-[var(--color-brand-primary)] text-[var(--color-text-primary)] rounded-lg text-center text-sm font-medium">
-                {searchParams.message}
+                {message}
               </p>
             )}
 
