@@ -28,7 +28,12 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
 
   const [optimisticTasks, setOptimisticTask] = useOptimistic(
     initialTasks,
-    (state: Task[], action: { type: 'add' | 'delete' | 'status' | 'update', payload: any }) => {
+    (state: Task[], action: 
+      | { type: 'add'; payload: Task } 
+      | { type: 'delete'; payload: string } 
+      | { type: 'status'; payload: { id: string, status: string } } 
+      | { type: 'update'; payload: Task }
+    ) => {
       switch (action.type) {
         case 'add':
           return [...state, action.payload]
