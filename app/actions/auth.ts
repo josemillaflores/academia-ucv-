@@ -35,7 +35,7 @@ export async function signup(formData: FormData) {
   const { error } = await supabase.auth.signUp(data)
 
   if (error) {
-    redirect('/signup?message=Could not sign up user')
+    redirect(`/signup?message=${encodeURIComponent(error.message)}`)
   }
 
   revalidatePath('/', 'layout')
@@ -53,4 +53,32 @@ export async function logout() {
 
   revalidatePath('/', 'layout')
   redirect('/login')
+}
+
+export async function resetPassword(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password`,
+  })
+
+  if (error) {
+    redirect(`/forgot-password?message=${encodeURIComponent(error.message)}`)
+  }
+
+  redirect('/forgot-password?message=Revisa tu correo para restablecer la contraseña')
+}
+
+export async function updatePassword(formData: FormData) {
+  const supabase = await createClient()
+  const password = formData.get('password') as string
+
+  const { error } = await supabase.auth.updateUser({ password })
+
+  if (error) {
+    redirect(`/reset-password?message=${encodeURIComponent(error.message)}`)
+  }
+
+  redirect('/login?message=Contraseña actualizada exitosamente. Por favor, inicia sesión.')
 }

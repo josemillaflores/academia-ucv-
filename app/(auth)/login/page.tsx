@@ -55,14 +55,19 @@ export default function LoginPage({
                 placeholder="••••••••"
                 required
               />
+              <div className="flex justify-end mt-1">
+                <Link href="/forgot-password" className="text-sm text-[var(--color-brand-primary)] hover:underline font-medium">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
             </div>
 
-            <button className="bg-[var(--color-brand-primary)] hover:bg-[var(--color-brand-secondary)] transition-colors rounded-lg px-4 py-3 text-white font-medium mt-4">
+            <button className="bg-[var(--color-brand-primary)] hover:bg-[var(--color-brand-secondary)] transition-colors rounded-lg px-4 py-3 text-white font-medium mt-2">
               Ingresar
             </button>
             
             {searchParams?.message && (
-              <p className="mt-4 p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-lg text-center text-sm font-medium">
+              <p className="mt-4 p-4 bg-[var(--color-surface-overlay)] border border-[var(--color-brand-primary)] text-[var(--color-text-primary)] rounded-lg text-center text-sm font-medium">
                 {searchParams.message}
               </p>
             )}
