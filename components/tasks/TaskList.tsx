@@ -46,13 +46,7 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
           return state;
       }
     }
-      if (action.type === 'add') return [...state, action.payload]
-      if (action.type === 'delete') return state.filter(t => t.id !== action.payload.id)
-      if (action.type === 'update_status') {
-        return state.map(t => t.id === action.payload.id ? { ...t, status: action.payload.status } : t)
-      }
-      return state
-    }
+
   )
 
   const filteredTasks = optimisticTasks.filter(task => {
