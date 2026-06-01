@@ -8,20 +8,31 @@ export async function createTask(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
+  const id = formData.get('id') as string | null
   const title = formData.get('title') as string
   const description = formData.get('description') as string
-  const course_id = formData.get('course_id') as string || null
   const priority = formData.get('priority') as string
-  const due_date = formData.get('due_date') as string || null
+  const due_date = formData.get('due_date') as string
+  const course_id_str = formData.get('course_id') as string
+  const course_id = course_id_str === 'none' ? null : course_id_str
 
-  const { error } = await supabase.from('tasks').insert({
+  const taskData = {
     user_id: user.id,
     title,
-    description,
-    course_id: course_id !== 'none' ? course_id : null,
-    priority,
-    due_date: due_date || null
-  })
+    description: description || null,
+    priority: priority || 'media',
+    due_date: due_date || null,
+    course_id: course_id || null,
+  }
+
+  let error;
+  if (id) {
+    const res = await supabase.from('tasks').update(taskData).eq('id', id)
+    error = res.error
+  } else {
+    const res = await supabase.from('tasks').insert(taskData)
+    error = res.error
+  }
 
   if (error) throw new Error(error.message)
   revalidatePath('/tasks')

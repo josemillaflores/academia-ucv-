@@ -112,24 +112,28 @@ export default async function DashboardPage() {
               </div>
             ) : (
               pendingTasks.map(task => (
-                <Link key={task.id} href="/tasks" className="bg-surface-raised border border-surface-border p-4 rounded-xl shadow-sm flex items-center justify-between hover:border-brand-primary transition-colors group">
+                <Link key={task.id} href="/tasks" className="bg-white dark:bg-slate-900 border border-surface-border p-4 rounded-xl shadow-sm flex items-center justify-between hover:border-brand-primary hover:shadow-md transition-all group">
                   <div className="flex items-center gap-4">
-                    <div className="bg-amber-100 text-amber-600 p-3 rounded-lg dark:bg-amber-900/30 dark:text-amber-400 group-hover:scale-110 transition-transform">
-                      <Clock size={24} />
+                    <div className="bg-slate-100 dark:bg-slate-800 text-slate-500 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 group-hover:scale-105 group-hover:text-brand-primary group-hover:bg-brand-subtle transition-all">
+                      <Clock size={20} />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-text-primary text-lg">{task.title}</h3>
-                      <span className="text-sm text-text-secondary flex items-center gap-1 mt-1 font-medium">
-                        <AlertTriangle size={14} className="text-brand-secondary" />
+                    <div className="flex flex-col">
+                      <h3 className="font-bold text-text-primary text-base">{task.title}</h3>
+                      <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 font-medium">
+                        <AlertTriangle size={14} className={new Date(task.due_date!) < new Date() ? "text-red-500" : "text-amber-500"} />
                         Vence: {task.due_date}
                       </span>
                     </div>
                   </div>
-                  <span className={`text-xs px-3 py-1.5 rounded-md border font-bold uppercase tracking-wider ${
-                    task.priority === 'alta' ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400' : 
-                    task.priority === 'media' ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400' : 
-                    'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400'
+                  <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide flex items-center gap-1 ${
+                    task.priority === 'alta' ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/30' : 
+                    task.priority === 'media' ? 'bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' : 
+                    'bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/30'
                   }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      task.priority === 'alta' ? 'bg-red-500' : 
+                      task.priority === 'media' ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`}></span>
                     {task.priority}
                   </span>
                 </Link>

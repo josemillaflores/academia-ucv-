@@ -8,16 +8,26 @@ export async function createDocente(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
+  const id = formData.get('id') as string | null
   const name = formData.get('name') as string
   const email = formData.get('email') as string
   const specialty = formData.get('specialty') as string
 
-  const { error } = await supabase.from('docentes').insert({
+  const docenteData = {
     user_id: user.id,
     name,
     email: email || null,
     specialty: specialty || null
-  })
+  }
+
+  let error;
+  if (id) {
+    const res = await supabase.from('docentes').update(docenteData).eq('id', id)
+    error = res.error
+  } else {
+    const res = await supabase.from('docentes').insert(docenteData)
+    error = res.error
+  }
 
   if (error) throw new Error(error.message)
   revalidatePath('/docentes')

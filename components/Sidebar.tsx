@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, LayoutDashboard, BookOpen, CheckSquare, LogOut, Users } from 'lucide-react'
+import { Menu, X, LayoutDashboard, BookOpen, CheckSquare, LogOut, Users, GraduationCap } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -19,8 +19,12 @@ export function Sidebar() {
 
   const SidebarContent = () => (
     <>
-      <div className="flex items-center gap-2 mb-8 h-12 px-2">
-        <span className="font-bold text-xl text-brand-primary dark:text-brand-primary">🎓 AcademIA</span>
+      <div className="flex items-center gap-3 px-2 mb-8">
+        <GraduationCap size={32} className="text-brand-primary" />
+        <div className="flex flex-col">
+          <span className="text-xl font-bold text-brand-primary">AcademIA</span>
+          <span className="text-[10px] text-slate-400 font-medium tracking-widest mt-[-2px]">v1.0.0</span>
+        </div>
       </div>
       
       <nav className="flex flex-col gap-2 flex-1">

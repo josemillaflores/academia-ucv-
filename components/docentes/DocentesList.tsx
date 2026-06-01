@@ -1,8 +1,8 @@
 'use client'
 
-import { useOptimistic, useRef, useTransition } from 'react'
+import { useOptimistic, useRef, useState, useTransition } from 'react'
 import { createDocente, deleteDocente } from '@/app/actions/docentes'
-import { Users, Trash2, Mail, GraduationCap } from 'lucide-react'
+import { Users, Trash2, Mail, GraduationCap, Pencil, X } from 'lucide-react'
 
 type Docente = {
   id: string
@@ -14,30 +14,42 @@ type Docente = {
 export function DocentesList({ initialDocentes }: { initialDocentes: Docente[] }) {
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
+  const [editingDocente, setEditingDocente] = useState<Docente | null>(null)
 
   const [optimisticDocentes, addOptimisticDocente] = useOptimistic(
     initialDocentes,
     (state: Docente[], newDocente: Docente | { id: string, delete: boolean }) => {
       if ('delete' in newDocente) {
-        return state.filter(c => c.id !== newDocente.id)
+        return state.filter(d => d.id !== newDocente.id)
       }
+      
+      const existingIndex = state.findIndex(d => d.id === (newDocente as Docente).id)
+      if (existingIndex >= 0) {
+        const newState = [...state]
+        newState[existingIndex] = newDocente as Docente
+        return newState
+      }
+      
       return [...state, newDocente as Docente]
     }
   )
 
-  async function handleAddDocente(formData: FormData) {
-    const newDocente = {
-      id: Math.random().toString(),
+  async function handleAddOrUpdateDocente(formData: FormData) {
+    const isUpdate = !!formData.get('id')
+    const docenteData = {
+      id: isUpdate ? formData.get('id') as string : Math.random().toString(),
       name: formData.get('name') as string,
       email: formData.get('email') as string,
       specialty: formData.get('specialty') as string,
     }
     
     startTransition(() => {
-      addOptimisticDocente(newDocente)
+      addOptimisticDocente(docenteData)
     })
 
     formRef.current?.reset()
+    setEditingDocente(null)
+    
     try {
       await createDocente(formData)
     } catch (e) {
@@ -46,6 +58,7 @@ export function DocentesList({ initialDocentes }: { initialDocentes: Docente[] }
   }
 
   async function handleDelete(id: string) {
+    if (editingDocente?.id === id) setEditingDocente(null)
     startTransition(() => {
       addOptimisticDocente({ id, delete: true })
     })
@@ -58,31 +71,37 @@ export function DocentesList({ initialDocentes }: { initialDocentes: Docente[] }
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Añadir Docente */}
+      {/* Añadir / Editar Docente */}
       <div className="bg-surface-raised border border-surface-border p-6 rounded-2xl shadow-sm mb-4 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
         <h2 className="text-xl font-bold mb-6 flex items-center gap-3 relative z-10 text-text-primary">
-          <div className="bg-amber-500/10 p-2 rounded-lg text-amber-600">
+          <div className="bg-brand-primary/10 p-2 rounded-lg text-brand-primary">
             <Users size={24} />
           </div>
-          Registrar Docente
+          {editingDocente ? 'Editar Docente' : 'Añadir Nuevo Docente'}
         </h2>
-        <form ref={formRef} action={handleAddDocente} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end relative z-10">
+        <form ref={formRef} action={handleAddOrUpdateDocente} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end relative z-10">
+          {editingDocente && <input type="hidden" name="id" value={editingDocente.id} />}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-text-secondary">Nombre Completo</label>
-            <input required name="name" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Dra. María López" />
+            <input required name="name" defaultValue={editingDocente?.name || ''} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Dr. Juan Pérez" />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-text-secondary">Correo Electrónico</label>
-            <input type="email" name="email" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: mlopez@ucv.edu.pe" />
+            <label className="text-sm font-semibold text-text-secondary">Especialidad (opcional)</label>
+            <input name="specialty" defaultValue={editingDocente?.specialty || ''} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Matemáticas Avanzadas" />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-text-secondary">Especialidad</label>
-            <input name="specialty" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Metodología de Investigación" />
+            <label className="text-sm font-semibold text-text-secondary">Correo (opcional)</label>
+            <input type="email" name="email" defaultValue={editingDocente?.email || ''} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: jperez@ucv.edu.pe" />
           </div>
-          <div className="md:col-span-3 flex justify-end mt-2">
-            <button type="submit" disabled={isPending} className="bg-brand-primary text-white font-bold px-8 py-3.5 rounded-lg hover:bg-brand-hover hover:scale-[1.02] active:scale-95 transition-all shadow-md w-full sm:w-auto">
-              {isPending ? 'Guardando...' : 'GUARDAR DOCENTE'}
+          <div className="flex gap-2 w-full md:col-span-3 mt-2 lg:mt-0 lg:justify-end">
+            {editingDocente && (
+              <button type="button" onClick={() => { setEditingDocente(null); formRef.current?.reset(); }} className="bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold px-4 py-3.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700 transition-all shadow-md">
+                <X size={20} />
+              </button>
+            )}
+            <button type="submit" disabled={isPending} className="bg-brand-primary text-white font-bold px-8 py-3.5 rounded-lg hover:bg-brand-hover hover:scale-[1.02] active:scale-95 transition-all shadow-md w-full lg:w-auto">
+              {isPending ? 'Guardando...' : (editingDocente ? 'ACTUALIZAR' : 'GUARDAR DOCENTE')}
             </button>
           </div>
         </form>
@@ -133,9 +152,14 @@ export function DocentesList({ initialDocentes }: { initialDocentes: Docente[] }
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => handleDelete(docente.id)} className="text-slate-400 hover:text-red-600 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-red-50 shadow-sm" title="Eliminar docente">
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => setEditingDocente(docente)} className="text-slate-400 hover:text-brand-primary bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-brand-subtle dark:hover:bg-brand-hover/20 shadow-sm" title="Editar docente">
+                        <Pencil size={18} />
+                      </button>
+                      <button onClick={() => handleDelete(docente.id)} className="text-slate-400 hover:text-red-600 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-red-50 dark:hover:bg-red-950/30 shadow-sm" title="Eliminar docente">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

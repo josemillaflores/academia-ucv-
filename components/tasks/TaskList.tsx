@@ -2,17 +2,7 @@
 
 import { useOptimistic, useRef, useState, useTransition } from 'react'
 import { createTask, deleteTask, updateTaskStatus } from '@/app/actions/tasks'
-import { CheckSquare, Trash2, Clock, CheckCircle2, Circle, AlertTriangle } from 'lucide-react'
-
-type Task = {
-  id: string
-  title: string
-  description: string | null
-  priority: string
-  status: string
-  due_date: string | null
-  course_id: string | null
-}
+import { CheckSquare, Circle, CheckCircle2, Clock, Trash2, AlertTriangle, Pencil, X } from 'lucide-react'
 
 type Course = {
   id: string
@@ -20,57 +10,63 @@ type Course = {
   color: string
 }
 
+type Task = {
+  id: string
+  title: string
+  description: string | null
+  course_id: string | null
+  priority: string
+  status: string
+  due_date: string | null
+}
+
 export function TaskList({ initialTasks, courses }: { initialTasks: Task[], courses: Course[] }) {
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
-  
-  // Filtros locales
-  const [filterCourse, setFilterCourse] = useState<string>('all')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [filter, setFilter] = useState('todas')
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
-  const [optimisticTasks, setOptimisticTasks] = useOptimistic(
+  const [optimisticTasks, setOptimisticTask] = useOptimistic(
     initialTasks,
-    (state: Task[], action:
-      | { type: 'add'; payload: Task }
-      | { type: 'delete'; payload: { id: string } }
-      | { type: 'update_status'; payload: { id: string; status: string } }
-    ) => {
+    (state: Task[], action: { type: 'add' | 'delete' | 'status' | 'update', payload: any }) => {
       switch (action.type) {
         case 'add':
-          return [...state, action.payload];
+          return [...state, action.payload]
         case 'delete':
-          return state.filter(t => t.id !== action.payload.id);
-        case 'update_status':
-          return state.map(t => t.id === action.payload.id ? { ...t, status: action.payload.status } : t);
+          return state.filter(t => t.id !== action.payload)
+        case 'status':
+          return state.map(t => t.id === action.payload.id ? { ...t, status: action.payload.status } : t)
+        case 'update':
+          return state.map(t => t.id === action.payload.id ? action.payload : t)
         default:
-          return state;
+          return state
       }
     }
-
   )
 
-  const filteredTasks = optimisticTasks.filter(task => {
-    if (filterCourse !== 'all' && task.course_id !== filterCourse) return false
-    if (filterStatus !== 'all' && task.status !== filterStatus) return false
-    return true
-  })
-
-  async function handleAddTask(formData: FormData) {
-    const newTask = {
-      id: Math.random().toString(),
+  async function handleAddOrUpdateTask(formData: FormData) {
+    const isUpdate = !!formData.get('id')
+    const taskData = {
+      id: isUpdate ? formData.get('id') as string : Math.random().toString(),
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       course_id: formData.get('course_id') as string,
       priority: formData.get('priority') as string,
+      status: isUpdate && editingTask ? editingTask.status : 'pendiente',
       due_date: formData.get('due_date') as string,
-      status: 'pendiente'
     }
     
     startTransition(() => {
-      setOptimisticTasks({ type: 'add', payload: newTask })
+      if (isUpdate) {
+        setOptimisticTask({ type: 'update', payload: taskData })
+      } else {
+        setOptimisticTask({ type: 'add', payload: taskData })
+      }
     })
 
     formRef.current?.reset()
+    setEditingTask(null)
+    
     try {
       await createTask(formData)
     } catch (e) {
@@ -79,8 +75,9 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
   }
 
   async function handleDelete(id: string) {
+    if (editingTask?.id === id) setEditingTask(null)
     startTransition(() => {
-      setOptimisticTasks({ type: 'delete', payload: { id } })
+      setOptimisticTask({ type: 'delete', payload: id })
     })
     try {
       await deleteTask(id)
@@ -90,49 +87,56 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
   }
 
   async function handleStatusChange(id: string, currentStatus: string) {
-    const nextStatusMap: Record<string, string> = {
-      'pendiente': 'en_progreso',
-      'en_progreso': 'completada',
-      'completada': 'pendiente'
-    }
-    const newStatus = nextStatusMap[currentStatus]
+    const nextStatus = currentStatus === 'pendiente' ? 'en_progreso' : 
+                       currentStatus === 'en_progreso' ? 'completada' : 'pendiente'
     
     startTransition(() => {
-      setOptimisticTasks({ type: 'update_status', payload: { id, status: newStatus } })
+      setOptimisticTask({ type: 'status', payload: { id, status: nextStatus } })
     })
     try {
-      await updateTaskStatus(id, newStatus)
+      await updateTaskStatus(id, nextStatus)
     } catch (e) {
       console.error(e)
     }
   }
 
+  const filteredTasks = optimisticTasks.filter(task => {
+    if (filter === 'pendientes') return task.status !== 'completada'
+    if (filter === 'completadas') return task.status === 'completada'
+    return true
+  }).sort((a, b) => {
+    if (a.status === 'completada' && b.status !== 'completada') return 1
+    if (a.status !== 'completada' && b.status === 'completada') return -1
+    return 0
+  })
+
   return (
     <div className="flex flex-col gap-8">
-      {/* Añadir Tarea */}
+      {/* Añadir / Editar Tarea */}
       <div className="bg-surface-raised border border-surface-border p-6 rounded-2xl shadow-sm mb-4 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
         <h2 className="text-xl font-bold mb-6 flex items-center gap-3 relative z-10 text-text-primary">
           <div className="bg-brand-primary/10 p-2 rounded-lg text-brand-primary">
             <CheckSquare size={24} />
           </div>
-          Añadir Nueva Tarea
+          {editingTask ? 'Editar Tarea' : 'Añadir Nueva Tarea'}
         </h2>
-        <form ref={formRef} action={handleAddTask} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-end relative z-10">
+        <form ref={formRef} action={handleAddOrUpdateTask} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-end relative z-10">
+          {editingTask && <input type="hidden" name="id" value={editingTask.id} />}
           <div className="flex flex-col gap-2 lg:col-span-2">
             <label className="text-sm font-semibold text-text-secondary">Título de la Tarea</label>
-            <input required name="title" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Entregar reporte final" />
+            <input required name="title" defaultValue={editingTask?.title || ''} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Entregar reporte final" />
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-text-secondary">Curso</label>
-            <select name="course_id" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full">
+            <select name="course_id" defaultValue={editingTask?.course_id || 'none'} key={editingTask ? editingTask.id : 'new-course'} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full">
               <option value="none">Sin curso (General)</option>
               {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-text-secondary">Prioridad</label>
-            <select name="priority" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full">
+            <select name="priority" defaultValue={editingTask?.priority || 'media'} key={editingTask ? editingTask.id : 'new-prio'} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full">
               <option value="baja">Baja</option>
               <option value="media">Media</option>
               <option value="alta">Alta</option>
@@ -140,31 +144,36 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
           </div>
           <div className="flex flex-col gap-2 lg:col-span-2">
             <label className="text-sm font-semibold text-text-secondary">Descripción (opcional)</label>
-            <input name="description" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full" placeholder="Detalles extra, enlaces, notas..." />
+            <input name="description" defaultValue={editingTask?.description || ''} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full" placeholder="Detalles extra, enlaces, notas..." />
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-text-secondary">Fecha Límite</label>
-            <input type="date" name="due_date" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full" />
+            <input type="date" name="due_date" defaultValue={editingTask?.due_date || ''} className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full" />
           </div>
-          <button type="submit" disabled={isPending} className="bg-brand-primary text-white font-bold px-8 py-3.5 rounded-lg hover:bg-brand-hover hover:scale-[1.02] active:scale-95 transition-all shadow-md w-full mt-2 lg:mt-0">
-            {isPending ? 'Guardando...' : 'GUARDAR TAREA'}
-          </button>
+          <div className="flex gap-2 w-full mt-2 lg:mt-0">
+            {editingTask && (
+              <button type="button" onClick={() => { setEditingTask(null); formRef.current?.reset(); }} className="bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold px-4 py-3.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700 transition-all shadow-md">
+                <X size={20} />
+              </button>
+            )}
+            <button type="submit" disabled={isPending} className="bg-brand-primary text-white font-bold px-8 py-3.5 rounded-lg hover:bg-brand-hover hover:scale-[1.02] active:scale-95 transition-all shadow-md flex-1 lg:flex-none">
+              {isPending ? 'Guardando...' : (editingTask ? 'ACTUALIZAR' : 'GUARDAR TAREA')}
+            </button>
+          </div>
         </form>
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-wrap gap-4 items-center bg-surface-base p-4 rounded-md border border-surface-border">
-        <span className="text-sm font-medium text-slate-500">Filtros:</span>
-        <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)} className="border rounded-md px-2 py-1 text-sm bg-surface-base">
-          <option value="all">Todos los cursos</option>
-          {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="border rounded-md px-2 py-1 text-sm bg-surface-base">
-          <option value="all">Todos los estados</option>
-          <option value="pendiente">Pendientes</option>
-          <option value="en_progreso">En Progreso</option>
-          <option value="completada">Completadas</option>
-        </select>
+      <div className="flex gap-2">
+        <button onClick={() => setFilter('todas')} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'todas' ? 'bg-brand-primary text-white' : 'bg-surface-raised text-text-secondary hover:bg-surface-border'}`}>
+          Todas
+        </button>
+        <button onClick={() => setFilter('pendientes')} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'pendientes' ? 'bg-brand-primary text-white' : 'bg-surface-raised text-text-secondary hover:bg-surface-border'}`}>
+          Pendientes
+        </button>
+        <button onClick={() => setFilter('completadas')} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'completadas' ? 'bg-brand-primary text-white' : 'bg-surface-raised text-text-secondary hover:bg-surface-border'}`}>
+          Completadas
+        </button>
       </div>
 
       {/* Lista de Tareas (Data Table) */}
@@ -232,9 +241,14 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button onClick={() => handleDelete(task.id)} className="text-slate-400 hover:text-red-600 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-red-50 shadow-sm" title="Eliminar tarea">
-                        <Trash2 size={18} />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setEditingTask(task)} className="text-slate-400 hover:text-brand-primary bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-brand-subtle dark:hover:bg-brand-hover/20 shadow-sm" title="Editar tarea">
+                          <Pencil size={18} />
+                        </button>
+                        <button onClick={() => handleDelete(task.id)} className="text-slate-400 hover:text-red-600 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg transition-all hover:bg-red-50 dark:hover:bg-red-950/30 shadow-sm" title="Eliminar tarea">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
