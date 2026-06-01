@@ -9,90 +9,114 @@
 
 ---
 
-## 🚀 Características Principales
+## 🏗️ Estructura del Proyecto
 
-### 1. Sistema de Autenticación Completo (Supabase Auth)
-- **Login y Registro:** Interfaz de usuario intuitiva dividida en dos columnas (visual y formulario).
-- **Recuperación de Contraseña:** Flujo completo de recuperación mediante envío de correos (`forgot-password` y `reset-password`).
-- **Rutas Protegidas:** Middlewares de Next.js (`middleware.ts`) que protegen el dashboard y redireccionan de forma inteligente a usuarios no autenticados.
+El proyecto sigue la arquitectura de **App Router** de Next.js, organizada de forma semántica y escalable:
+
+```text
+AcademIA/
+├── app/                        # Next.js App Router (Páginas y Rutas)
+│   ├── (auth)/                 # Grupo de rutas para Autenticación
+│   │   ├── login/              # Pantalla de Inicio de sesión
+│   │   ├── signup/             # Pantalla de Registro
+│   │   ├── forgot-password/    # Pantalla de Recuperación de contraseña
+│   │   └── reset-password/     # Pantalla de Restablecimiento
+│   ├── (app)/                  # Grupo de rutas protegidas (Requieren Login)
+│   │   ├── dashboard/          # Panel principal (Métricas y resumen)
+│   │   ├── courses/            # Página de Cursos
+│   │   ├── tasks/              # Página de Tareas
+│   │   └── docentes/           # Página de Docentes
+│   ├── actions/                # Server Actions (Lógica Backend)
+│   │   ├── auth.ts             # Lógica de login/registro/sesión
+│   │   ├── courses.ts          # CRUD de base de datos para Cursos
+│   │   ├── tasks.ts            # CRUD de base de datos para Tareas
+│   │   └── docentes.ts         # CRUD de base de datos para Docentes
+│   ├── globals.css             # Estilos globales y variables Tailwind v4
+│   └── layout.tsx              # Root Layout principal
+├── components/                 # Componentes React reutilizables (UI)
+│   ├── courses/                # Componentes específicos de cursos (ej. CourseList.tsx)
+│   ├── tasks/                  # Componentes específicos de tareas (ej. TaskList.tsx)
+│   ├── docentes/               # Componentes específicos de docentes (ej. DocentesList.tsx)
+│   └── Sidebar.tsx             # Menú de navegación lateral
+├── lib/                        # Utilidades y configuración de librerías
+│   └── supabase/               # Configuración del cliente Supabase SSR
+│       ├── client.ts           # Cliente para Componentes Frontend
+│       ├── server.ts           # Cliente para Server Actions
+│       └── middleware.ts       # Protección de rutas Edge
+└── public/                     # Archivos estáticos (imágenes, iconos)
+```
+
+---
+
+## 🎯 Descripción de los Módulos
+
+El sistema está dividido en módulos independientes y enfocados:
+
+### 1. Módulo de Autenticación (Supabase Auth)
+Encargado de la seguridad y el acceso al sistema. Maneja la creación de cuentas, inicio de sesión, y el flujo completo para restablecer contraseñas mediante correos electrónicos transaccionales. Emplea un Middleware que intercepta todas las peticiones para verificar el token de sesión y proteger el panel de control.
 
 ### 2. Panel de Control (Dashboard)
-- **KPIs y Métricas:** Tarjetas (cards) interactivas que muestran el Total de Tareas, Tareas Completadas, Total de Cursos y Docentes registrados.
-- **Próximas Entregas:** Un widget visual que lista las tareas urgentes basándose en su fecha de vencimiento, destacando prioridades con etiquetas de color (Alta, Media, Baja).
-- **Diseño Glassmorphism:** Implementación de degradados, desenfoques y bordes redondeados elegantes.
+El centro de mandos de la aplicación. Muestra tarjetas interactivas (KPIs) con resúmenes estadísticos (Total de Tareas, Completadas, Total de Cursos y Docentes). También incluye una sección visual dinámica de "Próximas Entregas" para mantener a los usuarios al día.
 
-### 3. Módulo de Cursos (CRUD)
-- Data Table moderna para listar cursos.
-- Inserción y actualización desde un mismo formulario integrado (sin modales obstructivos).
-- Asignación de colores personalizados (Color Picker) para diferenciar fácilmente cada curso.
+### 3. Módulo de Gestión de Cursos (CRUD)
+Permite a la institución académica registrar y organizar las materias que se dictan. 
+- **Funcionalidades:** Crear nuevos cursos asignando un Nombre, Código y un "Color" representativo (vía Color Picker). Todos los cursos se muestran en un 'Data Table'. Permite editar la información de un curso existente "En línea" usando un botón de lápiz y eliminarlo si es necesario.
 
-### 4. Módulo de Tareas (Gestor de Actividades)
-- Vinculación de tareas a cursos específicos.
-- Cambio de estados rápido (Pendiente -> En Progreso -> Completada) mediante clics.
-- Filtros dinámicos (Todas, Pendientes, Completadas) para buscar tareas fácilmente.
-- Funciones completas de creación, edición (Lápiz) y eliminación (Basurero).
+### 4. Módulo de Tareas y Actividades
+Es un gestor tipo "To-Do" orientado al contexto universitario. 
+- **Funcionalidades:** Cada tarea registrada requiere un Título, Descripción, Fecha de Vencimiento y puede ser vinculada directamente a un *Curso* existente. Permite marcar Prioridades (Alta, Media, Baja) que cambian el color de la alerta, y alterar el estado (Pendiente, En Progreso, Completada) con un clic. Dispone de filtros de vista rápida.
 
-### 5. Módulo de Docentes
-- Directorio de profesores.
-- Data Table que incluye especialidades, correos electrónicos e íconos dinámicos.
-- Mantenimiento ágil usando un formulario superior para crear y editar registros.
+### 5. Módulo de Plana Docente
+Un directorio administrativo para organizar al equipo de profesores.
+- **Funcionalidades:** Permite añadir los datos básicos como el Nombre Completo, Especialidad o Departamento Académico, y el Correo Electrónico Institucional. Se muestra en una lista tabular limpia, y permite actualizar la información usando el sistema unificado de edición.
+
+---
+
+## 🛡️ Buenas Prácticas Implementadas
+
+Para garantizar que el software sea robusto, mantenible y veloz, se adoptaron las siguientes directrices de desarrollo:
+
+1. **Uso de "Server Actions" en lugar de APIs Tradicionales:**
+   Toda la mutación de datos (Crear, Editar, Eliminar) ocurre mediante las `actions` de Next.js. Esto elimina la necesidad de crear endpoints `/api/`, reduce el código cliente, mejora la seguridad (se procesa en el backend) y previene errores de tipo CORS.
+
+2. **UI Optimista (Optimistic Updates):**
+   Implementación del hook `useOptimistic` de React 19. Cuando un usuario guarda, edita o elimina un registro (ej. una Tarea), la interfaz de usuario refleja el cambio **inmediatamente**, sin esperar a que el servidor de Supabase responda. Si hay un error, revierte los datos de manera transparente. Esto da una sensación de velocidad extrema (0 latencia).
+
+3. **Arquitectura de Base de Datos Segura (RLS - Row Level Security):**
+   Ningún usuario puede ver, modificar o eliminar datos de otro usuario. Se crearon políticas de seguridad directamente a nivel de base de datos en Supabase, obligando a que toda consulta SQL verifique que `user_id = auth.uid()`.
+
+4. **Diseño "Mobile-First" e Interfaz Adaptable:**
+   El menú (Sidebar) está diseñado para pantallas grandes, pero en teléfonos móviles (Mobile First) se oculta automáticamente dentro de un menú hamburguesa con un fondo difuminado de cristal ("drawer"), evitando saturar la pantalla pequeña y garantizando accesibilidad total.
+
+5. **Re-uso de Formularios para Edición (Edición en línea):**
+   En lugar de crear decenas de ventanas emergentes (Modales) que tapan el contenido o son molestas en móviles, el sistema re-utiliza el formulario de "Creación" ubicado en la cabecera. Al presionar "Editar", los datos viajan mágicamente arriba y el botón cambia a "Actualizar". Esto facilita la usabilidad ("UX") rápida y en 1 solo paso.
+
+6. **Tipado Estricto (TypeScript):**
+   Interfaces de datos bien definidas (`type Task`, `type Course`, `type Docente`) para prevenir errores en tiempo de compilación.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-El proyecto ha sido desarrollado utilizando un stack tecnológico moderno de última generación:
-
-- **Framework Frontend:** [Next.js 15.5](https://nextjs.org/) (App Router, Server Components).
-- **Estilos y UI:** [Tailwind CSS v4.0](https://tailwindcss.com/) nativo configurado mediante `@theme` en `globals.css`, sin dependencias externas pesadas.
-- **Iconografía:** [Lucide React](https://lucide.dev/) para iconos consistentes y ligeros.
-- **Backend as a Service (BaaS):** [Supabase](https://supabase.com/)
-  - Base de datos PostgreSQL relacional.
-  - Row Level Security (RLS) habilitado para que los usuarios solo vean su propia data (`user_id`).
-  - Auth Server-Side integrado con `@supabase/ssr`.
-- **Despliegue (Hosting):** [Vercel](https://vercel.com/) (Despliegue continuo).
-
----
-
-## 🏗️ Arquitectura de Base de Datos (Supabase)
-
-El sistema cuenta con las siguientes tablas protegidas por políticas RLS:
-
-1. `courses`: (id, user_id, name, code, color, created_at)
-2. `tasks`: (id, user_id, title, description, priority, status, due_date, course_id, created_at)
-3. `docentes`: (id, user_id, name, email, specialty, created_at)
+- **Frontend:** [Next.js 15.5](https://nextjs.org/)
+- **Estilos:** [Tailwind CSS v4.0](https://tailwindcss.com/) nativo (`@theme`).
+- **Iconos:** [Lucide React](https://lucide.dev/).
+- **Backend/DB:** [Supabase](https://supabase.com/) (PostgreSQL + RLS + Auth SSR).
+- **Despliegue:** [Vercel](https://vercel.com/) (CI/CD Automatizado).
 
 ---
 
 ## 💻 Desarrollo Local
 
-Para correr el proyecto en tu máquina local:
-
 1. Clona este repositorio.
-2. Instala las dependencias:
-   ```bash
-   npm install
-   ```
-3. Crea un archivo `.env.local` en la raíz del proyecto y añade tus llaves de Supabase:
+2. Instala las dependencias: `npm install`
+3. Crea un archivo `.env.local` con tus variables de Supabase:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=tu_url_de_supabase
    NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
    ```
-4. Inicia el servidor de desarrollo:
-   ```bash
-   npm run dev
-   ```
+4. Inicia el servidor de desarrollo: `npm run dev`
 5. Abre `http://localhost:3000` en tu navegador.
-
----
-
-## 📌 Logros y Soluciones Implementadas
-
-Durante el desarrollo de esta versión v1.0.0, superamos diversos retos técnicos:
-- **Tailwind v4 Migration:** Adaptamos variables CSS puras para inyectar correctamente la paleta institucional usando el nuevo formato `@theme` de la versión 4.
-- **Optimistic UI:** Se usó el hook `useOptimistic` de React 19 para brindar respuestas ultrarrápidas al usuario al crear, editar o borrar elementos, evitando bloqueos por peticiones de red.
-- **Next.js Server Actions:** Se reemplazaron las API Routes tradicionales (`/api/...`) por Server Actions de Next.js, brindando mayor seguridad e integración tipada para interactuar directamente con la base de datos de Supabase.
-- **Mobile First Sidebar:** Navegación lateral que en pantallas grandes se mantiene fija a la izquierda y en celulares se oculta elegantemente detrás de un botón de menú hamburguesa (Off-canvas menu).
 
 ---
 *Desarrollado para gestionar el futuro de la educación.*
