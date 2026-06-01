@@ -30,7 +30,22 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
 
   const [optimisticTasks, setOptimisticTasks] = useOptimistic(
     initialTasks,
-    (state: Task[], action: { type: string, payload: any }) => {
+    (state: Task[], action:
+      | { type: 'add'; payload: Task }
+      | { type: 'delete'; payload: { id: string } }
+      | { type: 'update_status'; payload: { id: string; status: string } }
+    ) => {
+      switch (action.type) {
+        case 'add':
+          return [...state, action.payload];
+        case 'delete':
+          return state.filter(t => t.id !== action.payload.id);
+        case 'update_status':
+          return state.map(t => t.id === action.payload.id ? { ...t, status: action.payload.status } : t);
+        default:
+          return state;
+      }
+    }
       if (action.type === 'add') return [...state, action.payload]
       if (action.type === 'delete') return state.filter(t => t.id !== action.payload.id)
       if (action.type === 'update_status') {
