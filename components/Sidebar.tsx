@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, LayoutDashboard, BookOpen, CheckSquare, LogOut } from 'lucide-react'
+import { Menu, X, LayoutDashboard, BookOpen, CheckSquare, LogOut, Users } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -14,6 +14,7 @@ export function Sidebar() {
     { name: 'Tablero', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Cursos', href: '/courses', icon: BookOpen },
     { name: 'Tareas', href: '/tasks', icon: CheckSquare },
+    { name: 'Docentes', href: '/docentes', icon: Users },
   ]
 
   const SidebarContent = () => (

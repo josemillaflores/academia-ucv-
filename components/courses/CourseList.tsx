@@ -60,26 +60,29 @@ export function CourseList({ initialCourses }: { initialCourses: Course[] }) {
   return (
     <div className="flex flex-col gap-8">
       {/* Nuevo Curso */}
-      <div className="bg-surface-raised border border-surface-border p-4 rounded-lg shadow-sm">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <BookOpen size={20} className="text-brand-primary" />
+      <div className="bg-surface-raised border border-surface-border p-6 rounded-2xl shadow-sm mb-4 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-3 relative z-10 text-text-primary">
+          <div className="bg-brand-primary/10 p-2 rounded-lg text-brand-primary">
+            <BookOpen size={24} />
+          </div>
           Añadir Nuevo Curso
         </h2>
-        <form ref={formRef} action={handleAddCourse} className="flex flex-col md:flex-row gap-4 items-end">
-          <div className="flex flex-col gap-1 w-full md:w-auto flex-1">
-            <label className="text-sm font-medium">Nombre</label>
-            <input required name="name" className="border rounded-md px-3 py-2 bg-surface-base" placeholder="Ej: Inteligencia Artificial" />
+        <form ref={formRef} action={handleAddCourse} className="flex flex-col lg:flex-row gap-5 items-start lg:items-end relative z-10">
+          <div className="flex flex-col gap-2 w-full lg:flex-1">
+            <label className="text-sm font-semibold text-text-secondary">Nombre del Curso</label>
+            <input required name="name" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Inteligencia Artificial" />
           </div>
-          <div className="flex flex-col gap-1 w-full md:w-auto">
-            <label className="text-sm font-medium">Código</label>
-            <input name="code" className="border rounded-md px-3 py-2 bg-surface-base" placeholder="Ej: IA-101" />
+          <div className="flex flex-col gap-2 w-full lg:w-48">
+            <label className="text-sm font-semibold text-text-secondary">Código (opcional)</label>
+            <input name="code" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: IA-101" />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Color</label>
-            <input type="color" name="color" defaultValue="#1F4E79" className="h-10 w-14 rounded-md cursor-pointer" />
+          <div className="flex flex-col gap-2 w-full sm:w-auto">
+            <label className="text-sm font-semibold text-text-secondary">Color</label>
+            <input type="color" name="color" defaultValue="#002D72" className="h-[50px] w-full sm:w-16 rounded-lg cursor-pointer border border-surface-border p-1 bg-surface-base" />
           </div>
-          <button type="submit" disabled={isPending} className="bg-brand-primary text-white px-4 py-2 rounded-md hover:bg-brand-hover transition-colors w-full md:w-auto">
-            Guardar
+          <button type="submit" disabled={isPending} className="bg-brand-primary text-white font-bold px-8 py-3.5 rounded-lg hover:bg-brand-hover hover:scale-[1.02] active:scale-95 transition-all shadow-md w-full lg:w-auto mt-2 lg:mt-0">
+            {isPending ? 'Guardando...' : 'GUARDAR CURSO'}
           </button>
         </form>
       </div>

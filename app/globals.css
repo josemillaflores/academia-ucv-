@@ -3,10 +3,11 @@
 
 @layer base {
   :root {
-    /* Design tokens */
-    --color-brand-primary: #4f46e5;
-    --color-brand-subtle: #eef2ff;
-    --color-brand-secondary: #8b5cf6;
+    /* Design tokens - Academic Theme (UCV Colors) */
+    --color-brand-primary: #002D72; /* Deep Academic Blue */
+    --color-brand-subtle: #eff6ff; /* Light Blue tint */
+    --color-brand-secondary: #C8102E; /* Crimson/Red Accent */
+    --color-brand-hover: #001f4d;
 
     --color-surface-base: #ffffff;
     --color-surface-raised: #f8fafc;
@@ -24,11 +25,15 @@
   }
 
   .dark {
-    --color-brand-primary: #818cf8;
-    --color-brand-subtle: #1e1b4b;
-    --color-surface-base: #0f172a;
-    --color-surface-raised: #1e293b;
-    --color-surface-border: #334155;
+    --color-brand-primary: #3b82f6;
+    --color-brand-subtle: #1e3a8a;
+    --color-brand-secondary: #ef4444;
+    --color-brand-hover: #2563eb;
+    
+    --color-surface-base: #020617;
+    --color-surface-raised: #0f172a;
+    --color-surface-border: #1e293b;
+    
     --color-text-primary: #f8fafc;
     --color-text-secondary: #cbd5e1;
     --color-text-tertiary: #94a3b8;

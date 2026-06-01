@@ -1,14 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { LayoutDashboard, CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
+import { LayoutDashboard, CheckCircle2, Clock, AlertTriangle, Plus, BookOpen, CheckSquare, Users } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [tasksRes, coursesRes] = await Promise.all([
+  const [tasksRes, coursesRes, docentesRes] = await Promise.all([
     supabase.from('tasks').select('*'),
-    supabase.from('courses').select('id')
+    supabase.from('courses').select('id'),
+    supabase.from('docentes').select('id')
   ])
 
   const tasks = tasksRes.data || []
@@ -21,63 +22,121 @@ export default async function DashboardPage() {
     .slice(0, 5)
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-        <LayoutDashboard className="text-brand-primary" />
-        Tablero de {user?.email?.split('@')[0]}
-      </h1>
+    <div className="flex flex-col gap-8">
+      {/* Header Premium */}
+      <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+        <h1 className="text-3xl font-bold flex items-center gap-3 relative z-10">
+          <LayoutDashboard className="text-white opacity-90" size={32} />
+          Bienvenido, {user?.email?.split('@')[0]}
+        </h1>
+        <p className="text-brand-subtle mt-2 relative z-10 text-lg">Aquí tienes el resumen de tu actividad académica.</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-surface-raised p-6 rounded-xl border border-surface-border shadow-sm flex flex-col items-center justify-center text-center">
-          <span className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">Total Tareas</span>
-          <span className="text-4xl font-bold text-text-primary font-mono">{totalCount}</span>
+      {/* Tarjetas Estadísticas (Glassmorphism inspired) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-surface-raised p-6 rounded-xl border border-surface-border shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-brand-primary transition-colors">
+          <div className="absolute right-[-10%] top-[-10%] w-24 h-24 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+          <span className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-1 flex items-center gap-2">
+            <CheckSquare size={16} /> Total Tareas
+          </span>
+          <span className="text-4xl font-bold text-text-primary">{totalCount}</span>
         </div>
         
-        <div className="bg-surface-raised p-6 rounded-xl border border-surface-border shadow-sm flex flex-col items-center justify-center text-center">
-          <span className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">Completadas</span>
-          <span className="text-4xl font-bold text-green-600 font-mono flex items-center gap-2">
-            {completedCount} <CheckCircle2 size={28} />
+        <div className="bg-surface-raised p-6 rounded-xl border border-surface-border shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-green-500 transition-colors">
+          <div className="absolute right-[-10%] top-[-10%] w-24 h-24 bg-green-100 dark:bg-green-900/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+          <span className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-1 flex items-center gap-2">
+            <CheckCircle2 size={16} /> Completadas
           </span>
+          <span className="text-4xl font-bold text-green-600">{completedCount}</span>
         </div>
 
-        <div className="bg-surface-raised p-6 rounded-xl border border-surface-border shadow-sm flex flex-col items-center justify-center text-center">
-          <span className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">Cursos Activos</span>
-          <span className="text-4xl font-bold text-brand-primary font-mono">{coursesRes.data?.length || 0}</span>
+        <div className="bg-surface-raised p-6 rounded-xl border border-surface-border shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-brand-secondary transition-colors">
+          <div className="absolute right-[-10%] top-[-10%] w-24 h-24 bg-red-100 dark:bg-red-900/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+          <span className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-1 flex items-center gap-2">
+            <BookOpen size={16} /> Cursos
+          </span>
+          <span className="text-4xl font-bold text-brand-secondary">{coursesRes.data?.length || 0}</span>
+        </div>
+
+        <div className="bg-surface-raised p-6 rounded-xl border border-surface-border shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-amber-500 transition-colors">
+          <div className="absolute right-[-10%] top-[-10%] w-24 h-24 bg-amber-100 dark:bg-amber-900/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+          <span className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-1 flex items-center gap-2">
+            <Users size={16} /> Docentes
+          </span>
+          <span className="text-4xl font-bold text-amber-500">{docentesRes.data?.length || 0}</span>
         </div>
       </div>
 
-      <h2 className="text-xl font-bold text-text-primary mt-6 border-b border-surface-border pb-2">
-        Próximas entregas
-      </h2>
-      
-      <div className="flex flex-col gap-3">
-        {pendingTasks.length === 0 ? (
-          <div className="p-8 text-center text-text-tertiary bg-surface-raised rounded-lg border border-surface-border">
-            No tienes tareas urgentes próximas a vencer. ¡Buen trabajo!
-          </div>
-        ) : (
-          pendingTasks.map(task => (
-            <Link key={task.id} href="/tasks" className="bg-surface-raised border border-surface-border p-4 rounded-lg shadow-sm flex items-center justify-between hover:border-brand-primary transition-colors">
-              <div className="flex items-center gap-3">
-                <Clock className="text-amber-500" size={20} />
-                <div>
-                  <h3 className="font-medium text-text-primary">{task.title}</h3>
-                  <span className="text-xs text-text-secondary flex items-center gap-1 mt-1">
-                    <AlertTriangle size={12} />
-                    Vence: {task.due_date}
-                  </span>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Acciones Rápidas */}
+        <div className="lg:col-span-1 flex flex-col gap-4">
+          <h2 className="text-xl font-bold text-text-primary border-b border-surface-border pb-2">
+            Acciones Rápidas
+          </h2>
+          <Link href="/tasks" className="flex items-center justify-between bg-brand-primary text-white p-4 rounded-xl shadow-md hover:bg-brand-hover hover:scale-[1.02] transition-all">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-lg"><CheckSquare size={20} /></div>
+              <span className="font-semibold">Añadir Tarea</span>
+            </div>
+            <Plus size={20} />
+          </Link>
+          <Link href="/courses" className="flex items-center justify-between bg-brand-secondary text-white p-4 rounded-xl shadow-md hover:opacity-90 hover:scale-[1.02] transition-all">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-lg"><BookOpen size={20} /></div>
+              <span className="font-semibold">Nuevo Curso</span>
+            </div>
+            <Plus size={20} />
+          </Link>
+          <Link href="/docentes" className="flex items-center justify-between bg-slate-800 text-white p-4 rounded-xl shadow-md hover:bg-slate-700 hover:scale-[1.02] transition-all dark:bg-slate-700 dark:hover:bg-slate-600">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-lg"><Users size={20} /></div>
+              <span className="font-semibold">Añadir Docente</span>
+            </div>
+            <Plus size={20} />
+          </Link>
+        </div>
+
+        {/* Próximas entregas */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          <h2 className="text-xl font-bold text-text-primary border-b border-surface-border pb-2">
+            Próximas entregas
+          </h2>
+          
+          <div className="flex flex-col gap-3">
+            {pendingTasks.length === 0 ? (
+              <div className="p-8 text-center text-text-tertiary bg-surface-raised rounded-xl border border-surface-border shadow-sm flex flex-col items-center justify-center">
+                <CheckCircle2 size={48} className="mb-4 text-green-500 opacity-50" />
+                <p className="text-lg font-medium">¡Al día!</p>
+                <p className="text-sm">No tienes tareas urgentes próximas a vencer.</p>
               </div>
-              <span className={`text-xs px-2 py-1 rounded-md border font-medium uppercase ${
-                task.priority === 'alta' ? 'bg-red-100 text-red-700 border-red-200' : 
-                task.priority === 'media' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
-                'bg-green-100 text-green-700 border-green-200'
-              }`}>
-                {task.priority}
-              </span>
-            </Link>
-          ))
-        )}
+            ) : (
+              pendingTasks.map(task => (
+                <Link key={task.id} href="/tasks" className="bg-surface-raised border border-surface-border p-4 rounded-xl shadow-sm flex items-center justify-between hover:border-brand-primary transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-amber-100 text-amber-600 p-3 rounded-lg dark:bg-amber-900/30 dark:text-amber-400 group-hover:scale-110 transition-transform">
+                      <Clock size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-text-primary text-lg">{task.title}</h3>
+                      <span className="text-sm text-text-secondary flex items-center gap-1 mt-1 font-medium">
+                        <AlertTriangle size={14} className="text-brand-secondary" />
+                        Vence: {task.due_date}
+                      </span>
+                    </div>
+                  </div>
+                  <span className={`text-xs px-3 py-1.5 rounded-md border font-bold uppercase tracking-wider ${
+                    task.priority === 'alta' ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400' : 
+                    task.priority === 'media' ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400' : 
+                    'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400'
+                  }`}>
+                    {task.priority}
+                  </span>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

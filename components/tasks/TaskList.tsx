@@ -110,41 +110,44 @@ export function TaskList({ initialTasks, courses }: { initialTasks: Task[], cour
   return (
     <div className="flex flex-col gap-8">
       {/* Añadir Tarea */}
-      <div className="bg-surface-raised border border-surface-border p-4 md:p-6 rounded-lg shadow-sm">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <CheckSquare size={20} className="text-brand-primary" />
-          Nueva Tarea
-        </h2>
-        <form ref={formRef} action={handleAddTask} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-          <div className="flex flex-col gap-1 lg:col-span-2">
-            <label className="text-sm font-medium">Título</label>
-            <input required name="title" className="border rounded-md px-3 py-2 bg-surface-base" placeholder="Ej: Entregar reporte" />
+      <div className="bg-surface-raised border border-surface-border p-6 rounded-2xl shadow-sm mb-4 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-3 relative z-10 text-text-primary">
+          <div className="bg-brand-primary/10 p-2 rounded-lg text-brand-primary">
+            <CheckSquare size={24} />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Curso</label>
-            <select name="course_id" className="border rounded-md px-3 py-2 bg-surface-base">
-              <option value="none">Sin curso</option>
+          Añadir Nueva Tarea
+        </h2>
+        <form ref={formRef} action={handleAddTask} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-end relative z-10">
+          <div className="flex flex-col gap-2 lg:col-span-2">
+            <label className="text-sm font-semibold text-text-secondary">Título de la Tarea</label>
+            <input required name="title" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all outline-none w-full" placeholder="Ej: Entregar reporte final" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-text-secondary">Curso</label>
+            <select name="course_id" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full">
+              <option value="none">Sin curso (General)</option>
               {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Prioridad</label>
-            <select name="priority" className="border rounded-md px-3 py-2 bg-surface-base">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-text-secondary">Prioridad</label>
+            <select name="priority" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full">
               <option value="baja">Baja</option>
               <option value="media">Media</option>
               <option value="alta">Alta</option>
             </select>
           </div>
-          <div className="flex flex-col gap-1 lg:col-span-2">
-            <label className="text-sm font-medium">Descripción (opcional)</label>
-            <input name="description" className="border rounded-md px-3 py-2 bg-surface-base" placeholder="Detalles extra..." />
+          <div className="flex flex-col gap-2 lg:col-span-2">
+            <label className="text-sm font-semibold text-text-secondary">Descripción (opcional)</label>
+            <input name="description" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full" placeholder="Detalles extra, enlaces, notas..." />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Fecha límite</label>
-            <input type="date" name="due_date" className="border rounded-md px-3 py-2 bg-surface-base" />
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-text-secondary">Fecha Límite</label>
+            <input type="date" name="due_date" className="border border-surface-border rounded-lg px-4 py-3 bg-surface-base focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none w-full" />
           </div>
-          <button type="submit" disabled={isPending} className="bg-brand-primary text-white px-4 py-2 rounded-md hover:bg-brand-hover transition-colors">
-            Añadir Tarea
+          <button type="submit" disabled={isPending} className="bg-brand-primary text-white font-bold px-8 py-3.5 rounded-lg hover:bg-brand-hover hover:scale-[1.02] active:scale-95 transition-all shadow-md w-full mt-2 lg:mt-0">
+            {isPending ? 'Guardando...' : 'GUARDAR TAREA'}
           </button>
         </form>
       </div>
