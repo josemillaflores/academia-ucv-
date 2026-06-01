@@ -33,18 +33,23 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password']
-  const isAuthRoute = authRoutes.includes(request.nextUrl.pathname)
+  // Rutas que pueden ser accedidas sin sesión
+  const publicRoutes = ['/login', '/signup', '/forgot-password', '/auth/confirm']
+  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname)
+
+  // Rutas exclusivas para invitados (si tienes sesión, te mandan al dashboard)
+  const guestOnlyRoutes = ['/login', '/signup', '/forgot-password']
+  const isGuestOnlyRoute = guestOnlyRoutes.includes(request.nextUrl.pathname)
 
   // Si no hay usuario y no estamos en una ruta pública, redirigimos a /login
-  if (!user && !isAuthRoute) {
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Si hay usuario y está en una ruta de auth, lo mandamos al dashboard
-  if (user && isAuthRoute) {
+  // Si hay usuario y está en una ruta exclusiva de invitados, lo mandamos al dashboard
+  if (user && isGuestOnlyRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
