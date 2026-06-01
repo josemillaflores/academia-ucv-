@@ -32,10 +32,15 @@ export async function signup(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { error } = await supabase.auth.signUp(data)
+  const { data: authData, error } = await supabase.auth.signUp(data)
 
   if (error) {
     redirect(`/signup?message=${encodeURIComponent(error.message)}`)
+  }
+
+  // Si Supabase pide confirmación de correo, la sesión será nula
+  if (!authData.session) {
+    redirect('/login?message=Revisa tu correo electrónico para confirmar tu cuenta antes de ingresar.')
   }
 
   revalidatePath('/', 'layout')

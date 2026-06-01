@@ -33,9 +33,10 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup'
+  const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password']
+  const isAuthRoute = authRoutes.includes(request.nextUrl.pathname)
 
-  // Si no hay usuario y no estamos en una ruta pública (login/signup), redirigimos a /login
+  // Si no hay usuario y no estamos en una ruta pública, redirigimos a /login
   if (!user && !isAuthRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
